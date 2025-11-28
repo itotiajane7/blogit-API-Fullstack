@@ -13,7 +13,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <h1 className="text-3xl font-bold">Welcome to your Dashboard 🎉</h1>
+      <h1 className="text-3xl font-bold">Welcome to your Dashboard Jane</h1>
       <p className="text-gray-600">You are successfully logged in.</p>
 
       <Button onClick={handleLogout}>

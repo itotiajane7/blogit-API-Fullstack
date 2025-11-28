@@ -44,7 +44,7 @@ const LoginForm = ()=>{
     const handleSubmit =(e:React.FormEvent<HTMLFormElement>)=>{
         e.preventDefault();
         if(!emailAddress || !password){
-            setErrorMsg(`Please Privide All Data `)
+            setErrorMsg(`Please Provide All Data `)
             return
         }
         setErrorMsg("");
