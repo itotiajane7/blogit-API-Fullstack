@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import api from "../lib/api";
 
 const AddBlog: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -9,7 +9,14 @@ const AddBlog: React.FC = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+  // Debug: Check token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token on AddBlog mount:", token);
+    if (!token) {
+      setMessage("⚠️ No token found. You may need to login again.");
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +33,9 @@ const AddBlog: React.FC = () => {
       return;
     }
 
+    const token = localStorage.getItem("token");
+    console.log("Token before blog creation:", token);
+    
     if (!token) {
       setMessage("You are not logged in.");
       return;
@@ -40,15 +50,7 @@ const AddBlog: React.FC = () => {
     formData.append("image", image);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5001/api/blogs",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.post("/blogs", formData);
 
       console.log("Blog created successfully:", response.data);
       setMessage("Blog created successfully!");

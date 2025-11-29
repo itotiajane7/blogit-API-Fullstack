@@ -7,6 +7,7 @@ import api from "../lib/api";
 import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
 import { Spinner } from "../components/ui/spinner";
 import useUserStore from '../store/useAuthStore';
+import { useNavigate } from "react-router-dom";
 
 interface UserInformation{
   emailAddress: string,
@@ -14,6 +15,7 @@ interface UserInformation{
 }
 
 const LoginForm = ()=>{
+    const navigate = useNavigate();
     const [emailAddress, setEmailAddress]=useState("")
     const [password, setPassword]=useState("")
     const [errorMsg, setErrorMsg]=useState("")
@@ -21,14 +23,41 @@ const LoginForm = ()=>{
     const loginMutation = useMutation<any,any,UserInformation>({
         mutationKey:[`login-user-key`],
         mutationFn: async (payload:UserInformation)=>{
-            const res = await api.post("/auth/login",payload);
+            const res = await api.post("/auth/login", {
+                identifier: payload.emailAddress,
+                password: payload.password
+            });
             return res.data;
         },
         onSuccess: (data)=>{
+            console.log("Login response:", data);
             setEmailAddress("");
             setPassword("");
             setErrorMsg("");
-            useUserStore.getState().setUser(data.data); 
+            
+            // Backend returns token and user at top level (not nested in data)
+            const token = data?.token;
+            const user = data?.user;
+            
+            console.log("Token:", token);
+            console.log("User:", user);
+            
+            // Store token
+            if (token) {
+                localStorage.setItem("token", token);
+                console.log("Token stored in localStorage:", localStorage.getItem("token"));
+            } else {
+                console.warn("No token in response");
+            }
+            
+            // Store user in zustand store
+            if (user) {
+                useUserStore.getState().setUser(user);
+                console.log("User stored in zustand");
+            }
+            
+            // Redirect to home or dashboard
+            navigate("/");
         },
         onError: (error:any)=>{
             const serverMessage = error?.response?.data;
@@ -38,7 +67,7 @@ const LoginForm = ()=>{
               serverMessage?.errors?.[0]?.message ||
               error?.message;
             setErrorMsg(derivedMessage || `Something Went Wrong During Login`)
-          },
+        },
     })
     
     const handleSubmit =(e:React.FormEvent<HTMLFormElement>)=>{
