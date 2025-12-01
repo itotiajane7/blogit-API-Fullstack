@@ -15,6 +15,7 @@ interface UserFields {
 interface UserStoreType extends UserFields {
   setUser: (user: Partial<UserFields>) => void;
   clearUser: () => void;
+  updateProfile: (profileData: Partial<UserFields>) => void; 
 }
 
 const useUserStore = create<UserStoreType>()(
@@ -46,6 +47,14 @@ const useUserStore = create<UserStoreType>()(
           dateJoined: undefined,
           lastUpdated: undefined,
         }),
+
+      
+      updateProfile: (profileData) =>
+        set((state) => ({
+          ...state,
+          ...profileData,
+          lastUpdated: new Date().toISOString(), 
+        })),
     }),
     { name: 'user-store' }
   )

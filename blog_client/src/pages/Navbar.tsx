@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx
+
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 
@@ -7,7 +7,7 @@ function Navbar() {
 
   const navLinks = [
     { name: "Dashboard", to: "/dashboard" },
-    { name: "Blog", to: "/blog" },        // <-- Added Blog link
+    { name: "Blog", to: "/blog" },       
     { name: "Profile", to: "/profile" },
     { name: "Login", to: "/login" },
     { name: "Register", to: "/register" },
@@ -16,10 +16,10 @@ function Navbar() {
   return (
     <nav className="bg-gray-800 text-white px-6 py-4 shadow-md">
       <div className="flex justify-between items-center">
-        {/* Logo */}
+        {}
         <h1 className="text-xl font-bold">Blog APP</h1>
 
-        {/* Mobile Menu Button */}
+        {}
         <button
           className="lg:hidden focus:outline-none"
           onClick={() => setOpen(!open)}
@@ -27,7 +27,7 @@ function Navbar() {
           <span className="text-2xl">☰</span>
         </button>
 
-        {/* Desktop Menu */}
+        {}
         <div className="hidden lg:flex gap-6">
           {navLinks.map((link) => (
             <NavLink
@@ -45,7 +45,7 @@ function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {}
       {open && (
         <div className="flex flex-col gap-4 mt-4 lg:hidden">
           {navLinks.map((link) => (

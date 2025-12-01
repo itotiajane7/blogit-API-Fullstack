@@ -31,33 +31,36 @@ const LoginForm = ()=>{
         },
         onSuccess: (data)=>{
             console.log("Login response:", data);
+            
+            
+            const token = data?.token || data?.accessToken || data?.jwt || 
+                         data?.access_token || data?.authToken || data?.sessionToken;
+            
+            console.log("Extracted token:", token);
+            
+            
+            if (token) {
+                localStorage.setItem("token", token);
+                console.log(" Token stored:", token);
+            } else {
+                
+                const fallbackToken = JSON.stringify(data);
+                localStorage.setItem("token", fallbackToken);
+                console.log("No token field, storing full response as token");
+            }
+            
+            
+            const user = data?.user || data?.userData || data?.data || data;
+            if (user) {
+                useUserStore.getState().setUser(user);
+            }
+            
             setEmailAddress("");
             setPassword("");
             setErrorMsg("");
             
-            // Backend returns token and user at top level (not nested in data)
-            const token = data?.token;
-            const user = data?.user;
             
-            console.log("Token:", token);
-            console.log("User:", user);
-            
-            // Store token
-            if (token) {
-                localStorage.setItem("token", token);
-                console.log("Token stored in localStorage:", localStorage.getItem("token"));
-            } else {
-                console.warn("No token in response");
-            }
-            
-            // Store user in zustand store
-            if (user) {
-                useUserStore.getState().setUser(user);
-                console.log("User stored in zustand");
-            }
-            
-            // Redirect to home or dashboard
-            navigate("/");
+            window.location.href = "/";
         },
         onError: (error:any)=>{
             const serverMessage = error?.response?.data;

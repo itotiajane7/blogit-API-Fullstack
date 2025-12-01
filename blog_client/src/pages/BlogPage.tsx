@@ -1,107 +1,87 @@
-// src/pages/BlogPage.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import api from "../lib/api.ts";
+import { Spinner } from "../components/ui/spinner";
 
 interface Blog {
-  _id: string;
+  id: string;
   title: string;
-  synopsis: string;
-  featuredImageUrl: string;
-  content: string;
-  createdAt: string;
+  synopsis?: string;
+  featuredImageUrl?: string;
+  createdAt?: string;
 }
 
-const BlogPage: React.FC = () => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+const Blogs = () => {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["get-user-blogs"],
+    queryFn: async () => {
+      const response = await api.get("/blogs");
+      return response.data.blogs; // return array only
+    },
+  });
 
-  const token = localStorage.getItem("token");
-
-  const fetchBlogs = async () => {
-    try {
-      const response = await axios.get("http://localhost:5001/api/blogs", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      // ALWAYS ensure blogs is an array
-      const data = response.data;
-      const blogList = Array.isArray(data) ? data : data.blogs;
-
-      setBlogs(blogList || []);
-    } catch (err) {
-      console.error("Failed to load blogs:", err);
-      setError("Failed to load blogs");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBlogs();
-  }, []);
-
-  if (loading)
-    return <p style={{ textAlign: "center", marginTop: 50 }}>Loading blogs...</p>;
-
-  if (error)
+  if (isLoading) {
     return (
-      <p style={{ textAlign: "center", color: "red", marginTop: 50 }}>{error}</p>
+      <div className="flex justify-center items-center h-[50vh]">
+        <Spinner className="size-20" />
+      </div>
     );
+  }
 
-  if (blogs.length === 0)
-    return (
-      <p style={{ textAlign: "center", marginTop: 50 }}>
-        No blogs available.
-      </p>
-    );
+  if (isError) {
+    return <p className="text-red-500 text-center mt-10">Error: {(error as Error).message}</p>;
+  }
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto" }}>
-      <h1 style={{ textAlign: "center", marginBottom: 30 }}>All Blogs</h1>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        {blogs.map((blog) => (
-          <div
-            key={blog._id}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              overflow: "hidden",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-            }}
-          >
-            {blog.featuredImageUrl && (
-              <img
-                src={blog.featuredImageUrl}
-                alt={blog.title}
-                style={{
-                  width: "100%",
-                  height: 180,
-                  objectFit: "cover",
-                }}
-              />
-            )}
-
-            <div style={{ padding: 16 }}>
-              <h3 style={{ margin: 0 }}>{blog.title}</h3>
-              <small style={{ color: "#666" }}>{blog.synopsis}</small>
-
-              <p style={{ marginTop: 8 }}>
-                {blog.content.length > 120
-                  ? blog.content.substring(0, 120) + "..."
-                  : blog.content}
-              </p>
-
-              <small style={{ color: "#999" }}>
-                Published: {new Date(blog.createdAt).toLocaleDateString()}
-              </small>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+      {data?.map((blog: Blog) => (
+        <BlogCard key={blog.id} blog={blog} />
+      ))}
     </div>
   );
 };
 
-export default BlogPage;
+export default Blogs;
+
+/// ------------------- CARD COMPONENT -------------------
+
+const BlogCard = ({ blog }: { blog: Blog }) => {
+  return (
+    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-4 border border-gray-200">
+      
+      {/* Featured Image with fallback */}
+      <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 overflow-hidden">
+        <img
+          src={blog.featuredImageUrl || `https://picsum.photos/seed/${blog.id}/400/300`}
+          alt={blog.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = `https://picsum.photos/seed/${blog.id}/400/300`;
+            target.onerror = null; // Prevent infinite loop if placeholder fails
+          }}
+        />
+      </div>
+
+      {/* Title */}
+      <h2 className="text-xl font-bold mb-2 line-clamp-2">{blog.title}</h2>
+
+      {/* Synopsis */}
+      <p className="text-gray-600 text-sm line-clamp-3">{blog.synopsis}</p>
+
+      {/* Footer */}
+      <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
+        <span>{new Date(blog.createdAt || "").toLocaleDateString()}</span>
+        <Link 
+          to={`/blogs/${blog.id}`}
+          className="inline-flex items-center text-blue-600 hover:underline"
+        >
+          Read More
+          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </Link>
+      </div>
+    </div>
+  );
+};

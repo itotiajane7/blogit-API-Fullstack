@@ -7,6 +7,8 @@ import Profile from "./pages/profile";
 import BlogDashboard from "./pages/BlogDashboard";
 import AddBlog from "./pages/AddBlog";
 import BlogPage from "./pages/BlogPage";
+import EditBlog from "./pages/EditBlog"; 
+import ViewBlog from "./pages/ViewBlog"; // ADD THIS IMPORT
 import useUserStore from "./store/useAuthStore";
 
 function App() {
@@ -19,21 +21,25 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-        {/* Root redirect */}
+        {/* Default route */}
         <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
 
-        {/* Public routes */}
+        {/* Auth routes (no auth required) */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Protected routes */}
+        {/* Protected routes (auth required) */}
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
         <Route path="/blog" element={user ? <BlogDashboard /> : <Navigate to="/login" />} />
         <Route path="/add-blog" element={user ? <AddBlog /> : <Navigate to="/login" />} />
         <Route path="/blogs" element={user ? <BlogPage /> : <Navigate to="/login" />} />
 
-        {/* Optional: catch-all redirect */}
+        {/* Blog management routes (auth required) */}
+        <Route path="/edit-blog/:id" element={user ? <EditBlog /> : <Navigate to="/login" />} />
+        <Route path="/view-blog/:id" element={user ? <ViewBlog /> : <Navigate to="/login" />} /> {/* ADD THIS LINE */}
+
+        {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
